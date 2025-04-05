@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const style = document.createElement('style');
                 style.id = 'mobile-nav-style';
                 style.textContent = `
-
                     .navbar {
                         backdrop-filter: blur(10px);
                         -webkit-backdrop-filter: blur(10px);
@@ -37,19 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     .navbar-links {
                         display: none;
                         flex-direction: column;
-                        position: absolute;
-                        top: 100%;
-                        left: 0;
-                        right: 0;
+                        position: fixed;
+                        top: 70px;
+                        left: 15px;
+                        right: 15px;
                         background: rgba(14, 25, 36, 0.88);
                         border: 3px solid rgba(161, 225, 255, 0.2);
                         border-radius: 22px;
                         padding: 20px;
                         align-items: flex-start;
-                        margin-top: 8px;
+                        margin-top: 0;
                         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75);
-                        width: 100%;
-                        z-index: 1000;
+                        width: calc(100% - 30px);
+                        z-index: 999;
                     }
                     
                     .navbar-links.show {
@@ -318,13 +317,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const smoothScroll = () => {
         const navLinks = document.querySelectorAll('.navbar-links a[href^="#"]');
+        const navbarHeight = document.querySelector('.navbar').offsetHeight + 20; // Get navbar height + some extra space
 
         navLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 if (link.getAttribute('href').startsWith('#')) {
                     e.preventDefault();
 
-
+                    // Close mobile menu if open
                     const mobileMenu = document.querySelector('.navbar-links.show');
                     const hamburger = document.querySelector('.hamburger-menu.active');
 
@@ -333,14 +333,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         hamburger.classList.remove('active');
                     }
 
-
+                    // Get the target section
                     const targetId = link.getAttribute('href');
                     const targetSection = document.querySelector(targetId);
 
                     if (targetSection) {
-                        targetSection.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
+                        // Calculate position accounting for fixed navbar
+                        const offsetTop = targetSection.getBoundingClientRect().top + window.pageYOffset - navbarHeight;
+                        
+                        // Scroll to position
+                        window.scrollTo({
+                            top: offsetTop,
+                            behavior: 'smooth'
                         });
                     }
                 }
@@ -352,14 +356,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateActiveNavLink = () => {
         const sections = document.querySelectorAll('section');
         const navLinks = document.querySelectorAll('.navbar-links a[href^="#"]');
+        const navbarHeight = document.querySelector('.navbar').offsetHeight + 20;
 
         window.addEventListener('scroll', () => {
             let current = '';
 
             sections.forEach(section => {
-                const sectionTop = section.offsetTop - 100;
-                const sectionHeight = section.clientHeight;
-                if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
+                const sectionTop = section.getBoundingClientRect().top;
+                
+                // Section is considered active when its top is close to the navbar bottom
+                if (sectionTop < navbarHeight && sectionTop > -section.offsetHeight + navbarHeight) {
                     current = section.getAttribute('id');
                 }
             });

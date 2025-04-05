@@ -26,6 +26,7 @@ body {
     overflow-x: hidden;
     max-width: 100vw;
     box-sizing: border-box;
+    padding-top: 90px;
 }
 
 #disclaimer-trigger {
@@ -63,7 +64,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: sticky;
+    position: fixed;
     top: 15px;
     z-index: 1000;
     background: rgba(30, 30, 30, 0.8);
@@ -621,6 +622,15 @@ footer {
         margin-bottom: 120px;
         overflow: hidden;
     }
+
+    .navbar-links.show {
+        position: fixed;
+        top: 70px;
+        left: 15px;
+        right: 15px;
+        width: calc(100% - 30px);
+        z-index: 999;
+    }
 }
 
 @media (max-width: 768px) {
@@ -670,6 +680,10 @@ footer {
 }
 
 @media (max-width: 480px) {
+    body {
+        padding-top: 70px;
+    }
+    
     .navbar {
         width: calc(100% - 20px);
         padding: 10px 15px;
