@@ -572,6 +572,180 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
+    const setupGallery = () => {
+        const slider = document.querySelector('.gallery-slider');
+        const slides = document.querySelectorAll('.gallery-slide');
+        const prevBtn = document.querySelector('.prev-arrow');
+        const nextBtn = document.querySelector('.next-arrow');
+        const indicators = document.querySelector('.gallery-indicators');
+        const modal = document.querySelector('.gallery-modal');
+        const modalImg = modal.querySelector('img');
+        const modalCaption = modal.querySelector('.modal-caption');
+        const modalClose = modal.querySelector('.modal-close');
+        
+        let currentIndex = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const minSwipeDistance = 50;
+        
+        // Check if we're on mobile or desktop
+        const isMobile = () => window.innerWidth < 1024;
+        
+        // Create indicator dots
+        if (isMobile()) {
+            slides.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.className = `indicator ${index === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => goToSlide(index));
+                indicators.appendChild(dot);
+            });
+        }
+        
+        // Set initial active slide
+        if (isMobile() && slides.length > 0) {
+            slides[0].classList.add('active');
+        }
+        
+        // Function to update the slider position
+        function updateSlider() {
+            if (isMobile()) {
+                const translateValue = -currentIndex * 100;
+                slider.style.transform = `translateX(${translateValue}%)`;
+                
+                // Update active class
+                slides.forEach((slide, index) => {
+                    slide.classList.toggle('active', index === currentIndex);
+                });
+                
+                // Update indicators
+                const dots = document.querySelectorAll('.indicator');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+        }
+        
+        // Go to specific slide
+        function goToSlide(index) {
+            if (index < 0) {
+                currentIndex = slides.length - 1;
+            } else if (index >= slides.length) {
+                currentIndex = 0;
+            } else {
+                currentIndex = index;
+            }
+            
+            updateSlider();
+        }
+        
+        // Event listeners for navigation
+        if (prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+            nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+        }
+        
+        // Touch swipe functionality
+        if (slider) {
+            slider.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            slider.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+        }
+        
+        function handleSwipe() {
+            const distance = touchStartX - touchEndX;
+            
+            if (Math.abs(distance) > minSwipeDistance) {
+                if (distance > 0) {
+                    // Swipe left, go to next
+                    goToSlide(currentIndex + 1);
+                } else {
+                    // Swipe right, go to previous
+                    goToSlide(currentIndex - 1);
+                }
+            }
+        }
+        
+        // Modal functionality
+        slides.forEach(slide => {
+            const img = slide.querySelector('img');
+            const caption = slide.querySelector('.slide-caption h3').textContent;
+            
+            img.addEventListener('click', () => {
+                modalImg.src = img.src;
+                modalCaption.textContent = caption;
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+        });
+        
+        // Close modal
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+        });
+        
+        // Close modal when clicking outside the image
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (isMobile()) {
+                // Arrow navigation for carousel
+                if (e.key === 'ArrowLeft') {
+                    goToSlide(currentIndex - 1);
+                } else if (e.key === 'ArrowRight') {
+                    goToSlide(currentIndex + 1);
+                }
+            }
+            
+            // ESC key to close modal
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (isMobile()) {
+                updateSlider();
+                
+                // Make sure indicators exist
+                if (indicators.children.length === 0) {
+                    slides.forEach((_, index) => {
+                        const dot = document.createElement('div');
+                        dot.className = `indicator ${index === currentIndex ? 'active' : ''}`;
+                        dot.addEventListener('click', () => goToSlide(index));
+                        indicators.appendChild(dot);
+                    });
+                }
+            } else {
+                // Remove all indicators if switching to desktop
+                while (indicators.firstChild) {
+                    indicators.removeChild(indicators.firstChild);
+                }
+                
+                // Reset any transform and remove active classes
+                slider.style.transform = '';
+                slides.forEach(slide => slide.classList.remove('active'));
+            }
+        });
+        
+        // Initial setup
+        updateSlider();
+    };
+
+
     createMobileNav();
     parallaxEffect();
     smoothScroll();
@@ -579,6 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addScrollAnimations();
     setupEasterEgg();
     setupComingSoonMessage();
+    setupGallery();
 
 
     window.addEventListener('resize', createMobileNav);
