@@ -260,12 +260,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const parallaxEffect = () => {
         const mockup = document.querySelector('.mockup');
+        const mockupContainer = document.querySelector('.mockup-container');
+
+        // Reset any transform when the page loads to ensure proper centering
+        if (mockup) {
+            mockup.style.transform = 'none';
+        }
+
+        // Check if the device is a mobile device - disable parallax on mobile
+        const isMobile = window.innerWidth <= 768;
 
         window.addEventListener('scroll', () => {
-            if (mockup) {
+            if (mockup && mockupContainer && !isMobile) {
                 const scrollY = window.scrollY;
+                const containerRect = mockupContainer.getBoundingClientRect();
+                
+                // Only apply parallax if the mockup is in or near the viewport
+                if (containerRect.bottom > 0 && containerRect.top < window.innerHeight) {
+                    // Apply a very subtle parallax effect with even more limited movement
+                    const translateY = Math.min(scrollY * 0.02, 25); // Reduced intensity and max movement
+                    mockup.style.transform = `translateY(${translateY}px)`; // Only affect Y-axis
+                } else {
+                    // Reset transform when out of view
+                    mockup.style.transform = 'none';
+                }
+            }
+        });
 
-                mockup.style.transform = `translateY(${scrollY * 0.05}px)`;
+        // Update parallax effect on resize and ensure centering
+        window.addEventListener('resize', () => {
+            // Disable parallax on mobile
+            const nowMobile = window.innerWidth <= 768;
+            if (nowMobile && mockup) {
+                mockup.style.transform = 'none';
+            }
+            
+            // Ensure centering is maintained
+            if (mockup) {
+                // Force horizontal centering
+                mockup.style.left = '0';
+                mockup.style.right = '0';
+                mockup.style.margin = '0 auto';
             }
         });
     };
@@ -572,180 +607,294 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    const setupGallery = () => {
-        const slider = document.querySelector('.gallery-slider');
-        const slides = document.querySelectorAll('.gallery-slide');
-        const prevBtn = document.querySelector('.prev-arrow');
-        const nextBtn = document.querySelector('.next-arrow');
-        const indicators = document.querySelector('.gallery-indicators');
-        const modal = document.querySelector('.gallery-modal');
-        const modalImg = modal.querySelector('img');
-        const modalCaption = modal.querySelector('.modal-caption');
-        const modalClose = modal.querySelector('.modal-close');
+    const setupScreenshotGallery = () => {
+        const track = document.querySelector('.carousel-track');
+        const slides = Array.from(document.querySelectorAll('.carousel-slide'));
+        const dotsContainer = document.querySelector('.carousel-dots');
+        const prevButton = document.querySelector('.prev-button');
+        const nextButton = document.querySelector('.next-button');
+        
+        // Fullscreen elements
+        const fullscreenView = document.querySelector('.fullscreen-view');
+        const fullscreenImage = document.querySelector('.fullscreen-image');
+        const fullscreenCaption = document.querySelector('.fullscreen-caption');
+        const closeFullscreen = document.querySelector('.close-fullscreen');
+        const fullscreenPrev = document.querySelector('.fullscreen-prev');
+        const fullscreenNext = document.querySelector('.fullscreen-next');
+        
+        let fullscreenIndex = 0;
+        
+        if (!track || slides.length === 0) return;
         
         let currentIndex = 0;
-        let touchStartX = 0;
-        let touchEndX = 0;
-        const minSwipeDistance = 50;
+        let startPos = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let isDragging = false;
         
-        // Check if we're on mobile or desktop
-        const isMobile = () => window.innerWidth < 1024;
+        // Create dot indicators
+        slides.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
+        });
         
-        // Create indicator dots
-        if (isMobile()) {
-            slides.forEach((_, index) => {
-                const dot = document.createElement('div');
-                dot.className = `indicator ${index === 0 ? 'active' : ''}`;
-                dot.addEventListener('click', () => goToSlide(index));
-                indicators.appendChild(dot);
-            });
-        }
-        
-        // Set initial active slide
-        if (isMobile() && slides.length > 0) {
-            slides[0].classList.add('active');
-        }
-        
-        // Function to update the slider position
-        function updateSlider() {
-            if (isMobile()) {
-                const translateValue = -currentIndex * 100;
-                slider.style.transform = `translateX(${translateValue}%)`;
-                
-                // Update active class
-                slides.forEach((slide, index) => {
-                    slide.classList.toggle('active', index === currentIndex);
-                });
-                
-                // Update indicators
-                const dots = document.querySelectorAll('.indicator');
-                dots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === currentIndex);
-                });
-            }
-        }
-        
-        // Go to specific slide
-        function goToSlide(index) {
-            if (index < 0) {
-                currentIndex = slides.length - 1;
-            } else if (index >= slides.length) {
-                currentIndex = 0;
-            } else {
-                currentIndex = index;
-            }
-            
-            updateSlider();
-        }
-        
-        // Event listeners for navigation
-        if (prevBtn && nextBtn) {
-            prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
-            nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
-        }
-        
-        // Touch swipe functionality
-        if (slider) {
-            slider.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-            });
-            
-            slider.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-        }
-        
-        function handleSwipe() {
-            const distance = touchStartX - touchEndX;
-            
-            if (Math.abs(distance) > minSwipeDistance) {
-                if (distance > 0) {
-                    // Swipe left, go to next
-                    goToSlide(currentIndex + 1);
-                } else {
-                    // Swipe right, go to previous
-                    goToSlide(currentIndex - 1);
-                }
-            }
-        }
-        
-        // Modal functionality
-        slides.forEach(slide => {
+        // Set up fullscreen view
+        slides.forEach((slide, index) => {
             const img = slide.querySelector('img');
-            const caption = slide.querySelector('.slide-caption h3').textContent;
+            const caption = slide.querySelector('p').textContent;
             
             img.addEventListener('click', () => {
-                modalImg.src = img.src;
-                modalCaption.textContent = caption;
-                modal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
+                openFullscreen(index, img.src, caption);
             });
         });
         
-        // Close modal
-        modalClose.addEventListener('click', () => {
-            modal.classList.remove('active');
-            document.body.style.overflow = ''; // Restore scrolling
-        });
+        function openFullscreen(index, src, caption) {
+            fullscreenIndex = index;
+            fullscreenImage.src = src;
+            fullscreenImage.alt = caption;
+            fullscreenCaption.textContent = caption;
+            
+            // Add active class with slight delay for transition effect
+            setTimeout(() => {
+                fullscreenView.classList.add('active');
+                
+                // Prevent body scroll when fullscreen is active
+                document.body.style.overflow = 'hidden';
+                
+                // Stop autoplay while fullscreen is open
+                stopAutoPlay();
+            }, 10);
+        }
         
-        // Close modal when clicking outside the image
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
+        function closeFullscreenView() {
+            fullscreenView.classList.remove('active');
+            
+            // Re-enable body scroll
+            document.body.style.overflow = '';
+            
+            // Resume autoplay after closing fullscreen
+            setTimeout(startAutoPlay, 1000);
+        }
+        
+        function navigateFullscreen(direction) {
+            let newIndex = fullscreenIndex + direction;
+            
+            // Loop navigation
+            if (newIndex < 0) newIndex = slides.length - 1;
+            if (newIndex >= slides.length) newIndex = 0;
+            
+            const slide = slides[newIndex];
+            const img = slide.querySelector('img');
+            const caption = slide.querySelector('p').textContent;
+            
+            // Apply fade out effect
+            fullscreenImage.style.opacity = '0';
+            fullscreenCaption.style.opacity = '0';
+            
+            setTimeout(() => {
+                fullscreenIndex = newIndex;
+                fullscreenImage.src = img.src;
+                fullscreenImage.alt = caption;
+                fullscreenCaption.textContent = caption;
+                
+                // Apply fade in effect
+                fullscreenImage.style.opacity = '1';
+                fullscreenCaption.style.opacity = '1';
+            }, 300);
+        }
+        
+        // Fullscreen event listeners
+        closeFullscreen.addEventListener('click', closeFullscreenView);
+        fullscreenPrev.addEventListener('click', () => navigateFullscreen(-1));
+        fullscreenNext.addEventListener('click', () => navigateFullscreen(1));
+        
+        // Close fullscreen on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fullscreenView.classList.contains('active')) {
+                closeFullscreenView();
+            } else if (e.key === 'ArrowLeft' && fullscreenView.classList.contains('active')) {
+                navigateFullscreen(-1);
+            } else if (e.key === 'ArrowRight' && fullscreenView.classList.contains('active')) {
+                navigateFullscreen(1);
             }
         });
         
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (isMobile()) {
-                // Arrow navigation for carousel
-                if (e.key === 'ArrowLeft') {
-                    goToSlide(currentIndex - 1);
-                } else if (e.key === 'ArrowRight') {
-                    goToSlide(currentIndex + 1);
-                }
+        // Click outside the image to close fullscreen
+        fullscreenView.addEventListener('click', (e) => {
+            if (e.target === fullscreenView) {
+                closeFullscreenView();
+            }
+        });
+        
+        // Set up carousel event listeners
+        prevButton.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                goToSlide(currentIndex - 1);
+            } else {
+                // Loop to last slide
+                goToSlide(slides.length - 1);
+            }
+        });
+        
+        nextButton.addEventListener('click', () => {
+            if (currentIndex < slides.length - 1) {
+                goToSlide(currentIndex + 1);
+            } else {
+                // Loop to first slide
+                goToSlide(0);
+            }
+        });
+        
+        // Touch events
+        function touchStart(e) {
+            stopAutoPlay();
+            startPos = getPositionX(e);
+            isDragging = true;
+            
+            const slideWidth = slides[0].offsetWidth;
+            currentTranslate = -currentIndex * slideWidth;
+            prevTranslate = currentTranslate;
+        }
+        
+        function touchMove(e) {
+            if (!isDragging) return;
+            
+            const currentPosition = getPositionX(e);
+            currentTranslate = prevTranslate + currentPosition - startPos;
+            updateTrackPosition();
+        }
+        
+        function touchEnd() {
+            isDragging = false;
+            
+            const movedBy = currentTranslate - prevTranslate;
+            
+            // Calculate the threshold for considering it a swipe (20% of slide width)
+            const threshold = slides[0].offsetWidth * 0.2;
+            
+            if (movedBy < -threshold && currentIndex < slides.length - 1) {
+                goToSlide(currentIndex + 1);
+            } else if (movedBy > threshold && currentIndex > 0) {
+                goToSlide(currentIndex - 1);
+            } else {
+                goToSlide(currentIndex);
             }
             
-            // ESC key to close modal
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
+            setTimeout(startAutoPlay, 3000);
+        }
+        
+        function getPositionX(e) {
+            return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+        }
+        
+        function updateTrackPosition() {
+            track.style.transform = `translateX(${currentTranslate}px)`;
+        }
+        
+        // Add touch and mouse event listeners
+        track.addEventListener('mousedown', touchStart);
+        track.addEventListener('touchstart', touchStart);
+        track.addEventListener('mousemove', touchMove);
+        track.addEventListener('touchmove', touchMove);
+        track.addEventListener('mouseup', touchEnd);
+        track.addEventListener('touchend', touchEnd);
+        track.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                touchEnd();
             }
         });
         
-        // Handle window resize
+        // Prevent context menu on long press
+        track.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        // Slide navigation function
+        function goToSlide(index) {
+            // Update current index
+            currentIndex = index;
+            
+            // Update slide track position
+            const slideWidth = slides[0].offsetWidth;
+            currentTranslate = -index * slideWidth;
+            prevTranslate = currentTranslate;
+            updateTrackPosition();
+            
+            // Update dots
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+        }
+        
+        // Handle window resize to maintain correct slide position
         window.addEventListener('resize', () => {
-            if (isMobile()) {
-                updateSlider();
-                
-                // Make sure indicators exist
-                if (indicators.children.length === 0) {
-                    slides.forEach((_, index) => {
-                        const dot = document.createElement('div');
-                        dot.className = `indicator ${index === currentIndex ? 'active' : ''}`;
-                        dot.addEventListener('click', () => goToSlide(index));
-                        indicators.appendChild(dot);
-                    });
-                }
-            } else {
-                // Remove all indicators if switching to desktop
-                while (indicators.firstChild) {
-                    indicators.removeChild(indicators.firstChild);
-                }
-                
-                // Reset any transform and remove active classes
-                slider.style.transform = '';
-                slides.forEach(slide => slide.classList.remove('active'));
-            }
+            // Recalculate position when window is resized
+            goToSlide(currentIndex);
+        });
+        
+        let autoPlayTimer;
+        let isAutoPlaying = true;
+        
+        function startAutoPlay() {
+            if (!isAutoPlaying) return;
+            stopAutoPlay(); // Clear any existing timers first
+            autoPlayTimer = setInterval(() => {
+                const nextIndex = (currentIndex + 1) % slides.length;
+                goToSlide(nextIndex);
+            }, 5000);
+        }
+        
+        function stopAutoPlay() {
+            clearInterval(autoPlayTimer);
+        }
+        
+        // Start autoplay initially
+        startAutoPlay();
+        
+        // Pause autoplay on user interaction
+        track.addEventListener('mouseenter', stopAutoPlay);
+        track.addEventListener('touchstart', stopAutoPlay);
+        track.addEventListener('mouseleave', startAutoPlay);
+        track.addEventListener('touchend', () => {
+            setTimeout(startAutoPlay, 3000);
+        });
+        prevButton.addEventListener('click', () => {
+            stopAutoPlay();
+            setTimeout(startAutoPlay, 3000);
+        });
+        nextButton.addEventListener('click', () => {
+            stopAutoPlay();
+            setTimeout(startAutoPlay, 3000);
         });
         
         // Initial setup
-        updateSlider();
+        goToSlide(0);
+        
+        // Add this as a scroll animation target
+        const carouselContainer = document.querySelector('.screenshot-carousel');
+        if (carouselContainer) {
+            // Create an observer for the carousel
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            carouselContainer.classList.add('scroll-animation');
+            observer.observe(carouselContainer);
+        }
     };
 
 
+    // Initialize everything
     createMobileNav();
     parallaxEffect();
     smoothScroll();
@@ -753,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addScrollAnimations();
     setupEasterEgg();
     setupComingSoonMessage();
-    setupGallery();
+    setupScreenshotGallery();
 
 
     window.addEventListener('resize', createMobileNav);
