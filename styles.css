@@ -34,7 +34,7 @@ body {
 
 #disclaimer {
     font-size: 12px;
-    font-weight: 100;
+    font-weight: 300;
     color: var(--accent-color);
     cursor: pointer;
     text-decoration: none;
