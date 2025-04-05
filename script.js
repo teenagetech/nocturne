@@ -265,6 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset any transform when the page loads to ensure proper centering
         if (mockup) {
             mockup.style.transform = 'none';
+            
+            // Ensure mockup never overflows horizontally
+            mockup.style.maxWidth = '96vw';
+            mockup.style.width = 'auto';
+            mockup.style.margin = '0 auto';
+            mockup.style.position = 'relative';
+            mockup.style.left = '0';
+            mockup.style.right = '0';
         }
 
         // Check if the device is a mobile device - disable parallax on mobile
@@ -278,8 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Only apply parallax if the mockup is in or near the viewport
                 if (containerRect.bottom > 0 && containerRect.top < window.innerHeight) {
                     // Apply a very subtle parallax effect with even more limited movement
-                    const translateY = Math.min(scrollY * 0.02, 25); // Reduced intensity and max movement
-                    mockup.style.transform = `translateY(${translateY}px)`; // Only affect Y-axis
+                    const translateY = Math.min(scrollY * 0.01, 15); // Further reduced intensity and max movement
+                    mockup.style.transform = `translateY(${translateY}px)`; // Only affect Y-axis, no horizontal movement
                 } else {
                     // Reset transform when out of view
                     mockup.style.transform = 'none';
@@ -295,12 +303,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 mockup.style.transform = 'none';
             }
             
-            // Ensure centering is maintained
+            // Ensure mockup never overflows horizontally on resize
             if (mockup) {
-                // Force horizontal centering
+                mockup.style.maxWidth = '96vw';
+                mockup.style.width = 'auto';
+                mockup.style.margin = '0 auto';
+                mockup.style.position = 'relative';
                 mockup.style.left = '0';
                 mockup.style.right = '0';
-                mockup.style.margin = '0 auto';
             }
         });
     };
