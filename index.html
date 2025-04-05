@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>nocturne - thoughtful note organization with gentle reminders</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#1E1E1E">
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="navbar-logo">
+                <img src="nocturne-logo.png" alt="Nocturne" class="logo-full">
+                <img src="moon.png" alt="Nocturne" class="logo-mobile">
+            </div>
+            <div class="navbar-links">
+                <a href="#home" class="active">home</a>
+                <a href="#about">about</a>
+                <a href="#features">features</a>
+                <a href="#" class="download-button-small coming-soon-link">
+                    <img src="app-store.png" alt="Download on the App Store">
+                </a>
+            </div>
+        </nav>
+        <main>
+            <section id="home">
+                <div class="hero-content">
+                    <h1>a place to collect your thoughts.</h1>
+                    <p class="hero-subtitle">capture ideas, organize them into stacks, and receive gentle reminders when
+                        it's time to revisit them.</p>
+                    <div class="mockup-container">
+                        <img src="mockup.png" alt="Nocturne app on iPhone" class="mockup">
+                    </div>
+                    <a href="#" class="download-button coming-soon-link">
+                        <img src="app-store.png" alt="Download on the App Store">
+                    </a>
+                </div>
+            </section>
+            <section id="about" class="glass-card">
+                <h2>about nocturne</h2>
+                <p><b id="about-title">nocturne is designed to help your ideas shine.</b>
+                    <br>
+                    it's a place to collect your thoughts, to reflect on your vision, and focus on what really matters.
+                    <br>
+                    nocturne puts your thoughts front and center, helping you to do what you do best.
+                    <br>
+                    it stays out of your way, with an experience so sleek and effortless that you forget you're even
+                    using it.
+                </p>
+                <p>unlike traditional note apps that let ideas get buried and forgotten, nocturne gently brings
+                    important thoughts back to your attention when you need them most, and helps you declutter your
+                    mind.</p>
+                <p>available exclusively for iPhone<a id="disclaimer-trigger" href="#disclaimer">*</a>.</p>
+            </section>
+            <section id="features" class="glass-card">
+                <h2>features</h2>
+                <div class="features-grid">
+                    <div class="feature">
+                        <h3>customizable stacks</h3>
+                        <p>organize notes into beautiful, color-coded stacks with custom icons that make visual
+                            organization intuitive and personal.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>priority levels</h3>
+                        <p>assign low, medium, or high priority to your notes with visual indicators, and easily sort
+                            your notes by priority to focus on what matters most.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>gentle reminders</h3>
+                        <p>set optional reminders for notes and review them when the time is right with a quick and
+                            intuitive review system.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>immersive dark interface</h3>
+                        <p>a midnight-inspired theme with subtle blue accents provides a calming environment for your
+                            thoughts, day or night.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>smart search</h3>
+                        <p>find notes instantly with powerful search across titles, content, tags, and even priority
+                            levels.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>tactile interaction</h3>
+                        <p>thoughtful haptic feedback throughout creates a satisfying, physical connection to your
+                            digital notes.</p>
+                    </div>
+                </div>
+            </section>
+            <section id="disclaimer">
+                <p>* nocturne runs on iOS 15 or later.</p>
+            </section>
+        </main>
+        <footer>
+            <p>&copy; 2025-&infin; Owen Van Vooren. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+    <script type="module" src="firebaseconfig.js"></script>
+</body>
+
+</html>
