@@ -261,13 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const mockup = document.querySelector('.mockup');
         const mockupContainer = document.querySelector('.mockup-container');
 
-        // Get the default scale based on screen width
+        // Get the default scale based on screen width - dramatically increased
         const getDefaultScale = () => {
-            if (window.innerWidth >= 1200) return 1.3;
-            if (window.innerWidth >= 851) return 1.2;
-            if (window.innerWidth >= 769) return 1.1;
-            if (window.innerWidth >= 481) return 1.0;
-            return 0.9;
+            if (window.innerWidth >= 1200) return 1.8;
+            if (window.innerWidth >= 851) return 2.2;
+            if (window.innerWidth >= 769) return 2.8;
+            if (window.innerWidth >= 481) return 3.2;
+            return 3.8;
         };
 
         // Set initial transform and positioning for the mockup
@@ -286,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mockup.style.left = '0';
             mockup.style.right = '0';
             
-            // Ensure container is visible
+            // Ensure container is visible and has enough space
             if (mockupContainer) {
                 mockupContainer.style.overflow = 'visible';
             }
@@ -306,8 +306,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Only apply parallax if the mockup is in or near the viewport
                 if (containerRect.bottom > 0 && containerRect.top < window.innerHeight) {
-                    // Apply a very subtle parallax effect with limited movement
-                    const translateY = Math.min(scrollY * 0.01, 15);
+                    // Apply a very minimal parallax effect with extremely limited movement
+                    const translateY = Math.min(scrollY * 0.005, 10);
                     // Keep the scale transformation while adding the parallax Y movement
                     mockup.style.transform = `scale(${scale}) translateY(${translateY}px)`;
                 } else {
