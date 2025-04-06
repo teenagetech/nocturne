@@ -261,18 +261,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const mockup = document.querySelector('.mockup');
         const mockupContainer = document.querySelector('.mockup-container');
 
-        // Reset any transform when the page loads to ensure proper centering
-        if (mockup) {
-            mockup.style.transform = 'none';
+        // Get the default scale based on screen width
+        const getDefaultScale = () => {
+            if (window.innerWidth >= 1200) return 1.3;
+            if (window.innerWidth >= 851) return 1.2;
+            if (window.innerWidth >= 769) return 1.1;
+            if (window.innerWidth >= 481) return 1.0;
+            return 0.9;
+        };
+
+        // Set initial transform and positioning for the mockup
+        function setupMockup() {
+            if (!mockup) return;
             
-            // Ensure mockup never overflows horizontally
-            mockup.style.maxWidth = '96vw';
-            mockup.style.width = 'auto';
+            const scale = getDefaultScale();
+            
+            // Make sure transform is explicitly set
+            mockup.style.transform = `scale(${scale})`;
+            
+            // Center the mockup horizontally
+            mockup.style.display = 'block';
             mockup.style.margin = '0 auto';
             mockup.style.position = 'relative';
             mockup.style.left = '0';
             mockup.style.right = '0';
+            
+            // Ensure container is visible
+            if (mockupContainer) {
+                mockupContainer.style.overflow = 'visible';
+            }
         }
+        
+        // Call setup immediately
+        setupMockup();
 
         // Check if the device is a mobile device - disable parallax on mobile
         const isMobile = window.innerWidth <= 768;
@@ -281,37 +302,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mockup && mockupContainer && !isMobile) {
                 const scrollY = window.scrollY;
                 const containerRect = mockupContainer.getBoundingClientRect();
+                const scale = getDefaultScale();
                 
                 // Only apply parallax if the mockup is in or near the viewport
                 if (containerRect.bottom > 0 && containerRect.top < window.innerHeight) {
-                    // Apply a very subtle parallax effect with even more limited movement
-                    const translateY = Math.min(scrollY * 0.01, 15); // Further reduced intensity and max movement
-                    mockup.style.transform = `translateY(${translateY}px)`; // Only affect Y-axis, no horizontal movement
+                    // Apply a very subtle parallax effect with limited movement
+                    const translateY = Math.min(scrollY * 0.01, 15);
+                    // Keep the scale transformation while adding the parallax Y movement
+                    mockup.style.transform = `scale(${scale}) translateY(${translateY}px)`;
                 } else {
-                    // Reset transform when out of view
-                    mockup.style.transform = 'none';
+                    // Reset transform when out of view but keep the scale
+                    mockup.style.transform = `scale(${scale})`;
                 }
             }
         });
 
-        // Update parallax effect on resize and ensure centering
-        window.addEventListener('resize', () => {
-            // Disable parallax on mobile
-            const nowMobile = window.innerWidth <= 768;
-            if (nowMobile && mockup) {
-                mockup.style.transform = 'none';
-            }
-            
-            // Ensure mockup never overflows horizontally on resize
-            if (mockup) {
-                mockup.style.maxWidth = '96vw';
-                mockup.style.width = 'auto';
-                mockup.style.margin = '0 auto';
-                mockup.style.position = 'relative';
-                mockup.style.left = '0';
-                mockup.style.right = '0';
-            }
-        });
+        // Update mockup sizing and positioning on resize
+        window.addEventListener('resize', setupMockup);
     };
 
 

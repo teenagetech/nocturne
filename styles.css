@@ -1,5 +1,5 @@
 :root {
-    --accent-color: #A1E1FF;
+    --accent-color: #96cbe3;
     --background-start: #1E1E1E;
     --background-end: #0E4062;
     --glass-bg: rgba(255, 255, 255, 0.05);
@@ -48,8 +48,8 @@ body {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-    overflow: hidden;
+    padding: 0;
+    overflow: visible;
     position: relative;
 }
 
@@ -155,7 +155,7 @@ body {
     padding: 60px 0;
     overflow: visible;
     position: relative;
-    overflow-x: hidden;
+    width: 100%;
 }
 
 .hero-content {
@@ -166,9 +166,8 @@ body {
     flex-direction: column;
     align-items: center;
     overflow: visible;
-    padding: 0 20px;
+    padding: 0;
     position: relative;
-    overflow-x: hidden;
 }
 
 .hero-content h1 {
@@ -189,12 +188,20 @@ body {
     font-weight: 400;
 }
 
+.hero-logo {
+    width: 100%;
+    padding: 0 20px;
+    max-width: 700px;
+    padding-bottom: 40px;
+    padding-top: 20px;
+}
+
 .mockup-container {
     position: relative;
-    margin: 40px auto 100px;
+    margin: 40px 0 100px;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -207,15 +214,14 @@ body {
 .mockup {
     width: auto;
     height: auto;
-    max-width: 95vw;
+    max-width: 90vw;
+    min-width: unset;
     filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15));
     z-index: -1;
     display: block;
     margin: 0 auto;
     position: relative;
-    left: 0;
-    right: 0;
-    transform: none;
+    transform-origin: center center;
 }
 
 /* Glass Card Styles */
@@ -566,18 +572,33 @@ footer {
     }
 
     .mockup {
-        width: auto;
         max-width: 95vw;
         height: auto;
-        transform: none;
         margin: 0 auto;
+        display: block;
     }
     
     .mockup-container {
         height: auto;
         padding: 0;
-        overflow: hidden;
+        overflow: visible;
         margin-bottom: 100px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .mockup {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: block;
+    }
+}
+
+@media (min-width: 851px) and (max-width: 1199px) {
+    .mockup {
+        max-width: 90vw;
+        margin: 0 auto;
+        display: block;
     }
 }
 
@@ -609,18 +630,16 @@ footer {
     }
 
     .mockup {
-        width: auto;
-        max-width: 95vw;
-        height: auto;
-        transform: none;
+        max-width: 90vw;
         margin: 0 auto;
+        display: block;
     }
     
     .mockup-container {
         height: auto;
         padding: 0;
         margin-bottom: 120px;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .navbar-links.show {
@@ -653,16 +672,16 @@ footer {
     }
 
     .mockup {
-        width: auto;
         max-width: 95vw;
         margin: 0 auto;
+        display: block;
     }
     
     .mockup-container {
         height: auto;
         padding: 0;
         margin-bottom: 140px;
-        overflow: hidden;
+        overflow: visible;
     }
     
     .carousel-container {
@@ -713,16 +732,16 @@ footer {
     }
 
     .mockup {
-        width: auto;
         max-width: 95vw;
         margin: 0 auto;
+        display: block;
     }
     
     .mockup-container {
         height: auto;
         padding: 0;
         margin-bottom: 160px;
-        overflow: hidden;
+        overflow: visible;
     }
     
     .carousel-container {
