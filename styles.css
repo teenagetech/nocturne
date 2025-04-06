@@ -15,6 +15,7 @@
 html {
     scroll-behavior: smooth;
     background-color: var(--background-start);
+    overflow-x: hidden;
 }
 
 body {
@@ -212,6 +213,7 @@ body {
     padding: 60px 0;
     text-align: center;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .mockup {
@@ -226,6 +228,7 @@ body {
     position: relative;
     transform: scale(1.8);
     transform-origin: center center;
+    overflow: hidden;
 }
 
 /* Glass Card Styles */
