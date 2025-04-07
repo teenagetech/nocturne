@@ -47,7 +47,17 @@
                     <p class="hero-subtitle">capture ideas, organize them into stacks, and receive gentle reminders when
                         it's time to revisit them.</p>
                     <div class="mockup-container">
-                        <img src="mockup.png" alt="Nocturne app on iPhone" class="mockup">
+                        <img srcset="mockup-small.png 1000w,
+                                    mockup-normal.png 2000w,
+                                    mockup-high.png 3000w,
+                                    mockup-ex-high.png 4000w"
+                            sizes="(max-width: 480px) 1000px,
+                                  (max-width: 768px) 2000px,
+                                  (max-width: 1199px) 3000px,
+                                  4000px"
+                            src="mockup-normal.png" 
+                            alt="nocturne app on iPhone" 
+                            class="mockup">
                     </div>
                     <a href="#" class="download-button coming-soon-link">
                         <img src="app-store.png" alt="Download on the App Store">
