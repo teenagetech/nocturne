@@ -630,14 +630,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    const setupScreenshotGallery = () => {
+    function setupScreenshotGallery() {
+        const container = document.querySelector('.carousel-container');
         const track = document.querySelector('.carousel-track');
         const slides = Array.from(document.querySelectorAll('.carousel-slide'));
         const dotsContainer = document.querySelector('.carousel-dots');
         const prevButton = document.querySelector('.prev-button');
         const nextButton = document.querySelector('.next-button');
         
-        // Fullscreen elements
+        // Fullscreen elements (unchanged)
         const fullscreenView = document.querySelector('.fullscreen-view');
         const fullscreenImage = document.querySelector('.fullscreen-image');
         const fullscreenCaption = document.querySelector('.fullscreen-caption');
@@ -645,15 +646,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullscreenPrev = document.querySelector('.fullscreen-prev');
         const fullscreenNext = document.querySelector('.fullscreen-next');
         
+        let currentIndex = 0;
         let fullscreenIndex = 0;
         
-        if (!track || slides.length === 0) return;
-        
-        let currentIndex = 0;
-        let startPos = 0;
-        let currentTranslate = 0;
-        let prevTranslate = 0;
-        let isDragging = false;
+        if (!container || slides.length === 0) return;
         
         // Create dot indicators
         slides.forEach((_, i) => {
@@ -664,100 +660,40 @@ document.addEventListener('DOMContentLoaded', () => {
             dotsContainer.appendChild(dot);
         });
         
-        // Set up fullscreen view
-        slides.forEach((slide, index) => {
-            const img = slide.querySelector('img');
-            const caption = slide.querySelector('p').textContent;
-            
-            img.addEventListener('click', () => {
-                openFullscreen(index, img.src, caption);
+        // Navigation function using scrollTo
+        function goToSlide(index) {
+            const slideWidth = container.offsetWidth;
+            container.scrollTo({
+                left: index * slideWidth,
+                behavior: 'smooth'
             });
-        });
-        
-        function openFullscreen(index, src, caption) {
-            fullscreenIndex = index;
-            fullscreenImage.src = src;
-            fullscreenImage.alt = caption;
-            fullscreenCaption.textContent = caption;
-            
-            // Add active class with slight delay for transition effect
-            setTimeout(() => {
-                fullscreenView.classList.add('active');
-                
-                // Prevent body scroll when fullscreen is active
-                document.body.style.overflow = 'hidden';
-                
-                // Stop autoplay while fullscreen is open
-                stopAutoPlay();
-            }, 10);
+            currentIndex = index;
+            updateDots();
         }
         
-        function closeFullscreenView() {
-            fullscreenView.classList.remove('active');
-            
-            // Re-enable body scroll
-            document.body.style.overflow = '';
-            
-            // Resume autoplay after closing fullscreen
-            setTimeout(startAutoPlay, 1000);
+        // Update active dot
+        function updateDots() {
+            document.querySelectorAll('.dot').forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
         }
         
-        function navigateFullscreen(direction) {
-            let newIndex = fullscreenIndex + direction;
-            
-            // Loop navigation
-            if (newIndex < 0) newIndex = slides.length - 1;
-            if (newIndex >= slides.length) newIndex = 0;
-            
-            const slide = slides[newIndex];
-            const img = slide.querySelector('img');
-            const caption = slide.querySelector('p').textContent;
-            
-            // Apply fade out effect
-            fullscreenImage.style.opacity = '0';
-            fullscreenCaption.style.opacity = '0';
-            
-            setTimeout(() => {
-                fullscreenIndex = newIndex;
-                fullscreenImage.src = img.src;
-                fullscreenImage.alt = caption;
-                fullscreenCaption.textContent = caption;
-                
-                // Apply fade in effect
-                fullscreenImage.style.opacity = '1';
-                fullscreenCaption.style.opacity = '1';
-            }, 300);
-        }
-        
-        // Fullscreen event listeners
-        closeFullscreen.addEventListener('click', closeFullscreenView);
-        fullscreenPrev.addEventListener('click', () => navigateFullscreen(-1));
-        fullscreenNext.addEventListener('click', () => navigateFullscreen(1));
-        
-        // Close fullscreen on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && fullscreenView.classList.contains('active')) {
-                closeFullscreenView();
-            } else if (e.key === 'ArrowLeft' && fullscreenView.classList.contains('active')) {
-                navigateFullscreen(-1);
-            } else if (e.key === 'ArrowRight' && fullscreenView.classList.contains('active')) {
-                navigateFullscreen(1);
+        // Sync dots with manual scrolling
+        container.addEventListener('scroll', () => {
+            const slideWidth = container.offsetWidth;
+            const scrollLeft = container.scrollLeft;
+            const newIndex = Math.round(scrollLeft / slideWidth);
+            if (newIndex !== currentIndex) {
+                currentIndex = newIndex;
+                updateDots();
             }
         });
         
-        // Click outside the image to close fullscreen
-        fullscreenView.addEventListener('click', (e) => {
-            if (e.target === fullscreenView) {
-                closeFullscreenView();
-            }
-        });
-        
-        // Set up carousel event listeners
+        // Navigation buttons with looping
         prevButton.addEventListener('click', () => {
             if (currentIndex > 0) {
                 goToSlide(currentIndex - 1);
             } else {
-                // Loop to last slide
                 goToSlide(slides.length - 1);
             }
         });
@@ -766,106 +702,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentIndex < slides.length - 1) {
                 goToSlide(currentIndex + 1);
             } else {
-                // Loop to first slide
                 goToSlide(0);
             }
         });
         
-        // Touch events
-        function touchStart(e) {
-            stopAutoPlay();
-            startPos = getPositionX(e);
-            isDragging = true;
-            
-            const slideWidth = slides[0].offsetWidth;
-            currentTranslate = -currentIndex * slideWidth;
-            prevTranslate = currentTranslate;
-        }
-        
-        function touchMove(e) {
-            if (!isDragging) return;
-            
-            const currentPosition = getPositionX(e);
-            currentTranslate = prevTranslate + currentPosition - startPos;
-            updateTrackPosition();
-        }
-        
-        function touchEnd() {
-            isDragging = false;
-            
-            const movedBy = currentTranslate - prevTranslate;
-            
-            // Calculate the threshold for considering it a swipe (20% of slide width)
-            const threshold = slides[0].offsetWidth * 0.2;
-            
-            if (movedBy < -threshold && currentIndex < slides.length - 1) {
-                goToSlide(currentIndex + 1);
-            } else if (movedBy > threshold && currentIndex > 0) {
-                goToSlide(currentIndex - 1);
-            } else {
-                goToSlide(currentIndex);
-            }
-            
-            setTimeout(startAutoPlay, 3000);
-        }
-        
-        function getPositionX(e) {
-            return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-        }
-        
-        function updateTrackPosition() {
-            track.style.transform = `translateX(${currentTranslate}px)`;
-        }
-        
-        // Add touch and mouse event listeners
-        track.addEventListener('mousedown', touchStart);
-        track.addEventListener('touchstart', touchStart);
-        track.addEventListener('mousemove', touchMove);
-        track.addEventListener('touchmove', touchMove);
-        track.addEventListener('mouseup', touchEnd);
-        track.addEventListener('touchend', touchEnd);
-        track.addEventListener('mouseleave', () => {
-            if (isDragging) {
-                touchEnd();
-            }
-        });
-        
-        // Prevent context menu on long press
-        track.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        // Slide navigation function
-        function goToSlide(index) {
-            // Update current index
-            currentIndex = index;
-            
-            // Update slide track position
-            const slideWidth = slides[0].offsetWidth;
-            currentTranslate = -index * slideWidth;
-            prevTranslate = currentTranslate;
-            updateTrackPosition();
-            
-            // Update dots
-            document.querySelectorAll('.dot').forEach((dot, i) => {
-                dot.classList.toggle('active', i === index);
-            });
-        }
-        
-        // Handle window resize to maintain correct slide position
-        window.addEventListener('resize', () => {
-            // Recalculate position when window is resized
-            goToSlide(currentIndex);
-        });
-        
+        // Autoplay functionality
         let autoPlayTimer;
         let isAutoPlaying = true;
         
         function startAutoPlay() {
             if (!isAutoPlaying) return;
-            stopAutoPlay(); // Clear any existing timers first
+            stopAutoPlay();
             autoPlayTimer = setInterval(() => {
                 const nextIndex = (currentIndex + 1) % slides.length;
                 goToSlide(nextIndex);
@@ -876,14 +723,11 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(autoPlayTimer);
         }
         
-        // Start autoplay initially
         startAutoPlay();
         
-        // Pause autoplay on user interaction
-        track.addEventListener('mouseenter', stopAutoPlay);
-        track.addEventListener('touchstart', stopAutoPlay);
-        track.addEventListener('mouseleave', startAutoPlay);
-        track.addEventListener('touchend', () => {
+        // Pause autoplay on interaction
+        container.addEventListener('touchstart', stopAutoPlay);
+        container.addEventListener('touchend', () => {
             setTimeout(startAutoPlay, 3000);
         });
         prevButton.addEventListener('click', () => {
@@ -895,13 +739,83 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(startAutoPlay, 3000);
         });
         
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            goToSlide(currentIndex);
+        });
+        
+        // Fullscreen setup (unchanged)
+        slides.forEach((slide, index) => {
+            const img = slide.querySelector('img');
+            const caption = slide.querySelector('p').textContent;
+            img.addEventListener('click', () => {
+                openFullscreen(index, img.src, caption);
+            });
+        });
+        
+        function openFullscreen(index, src, caption) {
+            fullscreenIndex = index;
+            fullscreenImage.src = src;
+            fullscreenImage.alt = caption;
+            fullscreenCaption.textContent = caption;
+            setTimeout(() => {
+                fullscreenView.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                stopAutoPlay();
+            }, 10);
+        }
+        
+        function closeFullscreenView() {
+            fullscreenView.classList.remove('active');
+            document.body.style.overflow = '';
+            setTimeout(startAutoPlay, 1000);
+        }
+        
+        function navigateFullscreen(direction) {
+            let newIndex = fullscreenIndex + direction;
+            if (newIndex < 0) newIndex = slides.length - 1;
+            if (newIndex >= slides.length) newIndex = 0;
+            const slide = slides[newIndex];
+            const img = slide.querySelector('img');
+            const caption = slide.querySelector('p').textContent;
+            fullscreenImage.style.opacity = '0';
+            fullscreenCaption.style.opacity = '0';
+            setTimeout(() => {
+                fullscreenIndex = newIndex;
+                fullscreenImage.src = img.src;
+                fullscreenImage.alt = caption;
+                fullscreenCaption.textContent = caption;
+                fullscreenImage.style.opacity = '1';
+                fullscreenCaption.style.opacity = '1';
+            }, 300);
+        }
+        
+        closeFullscreen.addEventListener('click', closeFullscreenView);
+        fullscreenPrev.addEventListener('click', () => navigateFullscreen(-1));
+        fullscreenNext.addEventListener('click', () => navigateFullscreen(1));
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fullscreenView.classList.contains('active')) {
+                closeFullscreenView();
+            } else if (e.key === 'ArrowLeft' && fullscreenView.classList.contains('active')) {
+                navigateFullscreen(-1);
+            } else if (e.key === 'ArrowRight' && fullscreenView.classList.contains('active')) {
+                navigateFullscreen(1);
+            }
+        });
+        
+        fullscreenView.addEventListener('click', (e) => {
+            if (e.target === fullscreenView) {
+                closeFullscreenView();
+            }
+        });
+        
         // Initial setup
         goToSlide(0);
         
-        // Add this as a scroll animation target
+        // Scroll animation for carousel
         const carouselContainer = document.querySelector('.screenshot-carousel');
         if (carouselContainer) {
-            // Create an observer for the carousel
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -910,11 +824,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             }, { threshold: 0.1 });
-            
             carouselContainer.classList.add('scroll-animation');
             observer.observe(carouselContainer);
         }
-    };
+    }
 
 
     // Initialize everything

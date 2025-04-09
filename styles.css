@@ -909,3 +909,19 @@ footer {
     transform: scale(1.03);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
+
+.carousel-container {
+    overflow-x: scroll; /* Enable horizontal scrolling */
+    scroll-snap-type: x mandatory; /* Snap horizontally to each slide */
+    -ms-overflow-style: none; /* Hide scrollbar in IE and Edge */
+    scrollbar-width: none; /* Hide scrollbar in Firefox */
+}
+
+/* Hide scrollbar in Chrome, Safari, and Opera */
+.carousel-container::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-slide {
+    scroll-snap-align: start; /* Snap to the start of each slide */
+}
