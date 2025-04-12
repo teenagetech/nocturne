@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Autoplay functionality
         let autoPlayTimer;
-        let isAutoPlaying = true;
+        let isAutoPlaying = false;
         
         function startAutoPlay() {
             if (!isAutoPlaying) return;
